@@ -92,6 +92,15 @@ When a mode is inferred, announce it:
 Inferred mode: <mode> (from target: "<target>")
 ```
 
+### Agent Count Override
+
+After resolving the mode, scan the full invocation text for a natural language agent count:
+
+- Patterns to match: `"N agents"`, `"a team of N"`, `"use N"`, `"--agents N"` (N is a number word or digit)
+- Examples: "use a team of 5 agents", "3 agents", "just 2 researchers", "--agents 4"
+- If found, store as `MAX_AGENTS`. This overrides the typical range in the Team Size Limits table but is still bounded by the hard cap of 6.
+- If no override is found, `MAX_AGENTS` is unset and the skill selects agent count based on task complexity.
+
 ### Help Text
 
 ```
@@ -170,6 +179,8 @@ Treat both files as one combined catalogue. Personas from the user file are full
 ### Step 3 — Select or Create Personas
 
 Evaluate which personas from the merged catalogue match the task's domain, technology stack, and problem space.
+
+If `MAX_AGENTS` was set during invocation parsing, select exactly that many personas (no more, no fewer). If fewer good matches exist than `MAX_AGENTS`, create additional personas to fill the count. If `MAX_AGENTS` is unset, select as many as the task warrants within the typical range for the mode.
 
 - **Good matches exist:** Select the most relevant and assign one per teammate.
 - **No good match:** Create a new persona inline:
@@ -288,7 +299,7 @@ When all tasks in a phase complete and the next phase requires agents to see eac
 
 1. Use `TaskOutput` to read each agent's completed task output and extract findings JSON
 2. Consolidate all findings into a single array
-3. Send each agent a `SendMessage` with the full consolidated findings before their next task begins
+3. Send each agent a separate `SendMessage` with the full consolidated findings before their next task begins — **one call per agent, never broadcast (`to: "*"` is not supported for structured messages)**
 
 ### Phase Transitions
 
@@ -332,7 +343,7 @@ Use `TaskOutput` to read each agent's last completed task output and extract the
 
 ### Step 3 — Shut Down Teammates
 
-Send each teammate a `SendMessage` asking them to shut down gracefully.
+Send each teammate a separate `SendMessage` asking them to shut down gracefully — one call per agent, never `to: "*"`.
 
 ### Step 4 — Clean Up the Team
 
@@ -427,7 +438,7 @@ When pausing, provide: what triggered it, current state, options, and a recommen
 #### Phase 2 — Challenge
 
 5. When all `review` tasks complete, collect each reviewer's findings via `TaskOutput` and consolidate.
-6. Send each reviewer a `SendMessage`:
+6. Send each reviewer a separate `SendMessage` (one call per reviewer, never `to: "*"`):
    > "All initial reviews complete. Challenge phase beginning. Here are all agents' findings: [consolidated JSON]. For each finding you disagree with, message that reviewer directly via SendMessage. Defend your own findings with evidence. If convinced you were wrong, mark the finding as `retracted`. Mark your challenge task complete with your updated findings in the output."
 7. Reviewers challenge each other via `SendMessage` and mark `challenge` tasks complete with updated findings.
 
@@ -496,7 +507,7 @@ When pausing, provide: what triggered it, current state, options, and a recommen
 #### Phase 3 — Challenge
 
 6. Collect all evidence via `TaskOutput` and consolidate.
-7. Send each agent a `SendMessage`:
+7. Send each agent a separate `SendMessage` (one call per agent, never `to: "*"`):
    > "Investigation complete. Challenge phase beginning. Here is all agents' evidence: [consolidated JSON]. Exchange counter-evidence via SendMessage. Mark your challenge task complete with your updated verdict in the output."
 8. Agents exchange evidence and mark `challenge` tasks complete.
 
@@ -529,7 +540,7 @@ When pausing, provide: what triggered it, current state, options, and a recommen
 #### Phase 3 — Cross-Pollination and Synthesis
 
 6. Collect all findings via `TaskOutput` and consolidate.
-7. Send each agent a `SendMessage`:
+7. Send each agent a separate `SendMessage` (one call per agent, never `to: "*"`):
    > "Exploration complete. Cross-pollination beginning. Here are all agents' findings: [consolidated JSON]. Message agents via SendMessage to resolve disagreements. Mark your synthesize task complete with refined findings in the output."
 8. Agents message each other and mark `synthesize` tasks complete.
 
