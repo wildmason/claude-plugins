@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "wildmason",
+  "description": "Claude Code plugins from Wildmason",
+  "owner": {
+    "name": "Wildmason",
+    "email": "matt@wildmason.dev"
+  },
+  "plugins": [
+    {
+      "name": "swarm",
+      "description": "Multi-agent swarm orchestration — review, implement, debug, and research modes with specialist personas and parallel execution via experimental agent teams.",
+      "category": "development",
+      "source": "./plugins/swarm",
+      "homepage": "https://github.com/wildmason/claude-plugins/tree/main/plugins/swarm"
+    }
+  ]
+}
