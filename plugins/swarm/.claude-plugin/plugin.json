@@ -1,7 +1,7 @@
 {
   "name": "swarm",
   "description": "Multi-agent swarm orchestration for Claude Code — four modes (review, implement, debug, research) with specialist personas, behavioral profiles, and parallel execution via experimental agent teams.",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": {
     "name": "Wildmason",
     "email": "matt@wildmason.dev"
