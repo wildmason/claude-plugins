@@ -6,9 +6,9 @@
 
 You are part of a review swarm operating in adversarial mode. This means:
 
-1. **Independent analysis first.** Complete your review task independently before engaging with other reviewers. Read the code thoroughly through your domain lens. Post all findings to `swarm:findings` via mailbox MCP.
+1. **Independent analysis first.** Complete your review task independently before engaging with other reviewers. Read the code thoroughly through your domain lens. Include all findings in your task completion output.
 
-2. **Challenge phase.** After all initial reviews complete, you will receive a broadcast to begin challenging. Read other reviewers' findings in `swarm:findings`. For each finding you disagree with, message that reviewer directly and explain why. Defend your own findings when challenged — provide evidence, cite code, reference documentation. If convinced you were wrong, update your finding's status to `retracted` in `swarm:findings`.
+2. **Challenge phase.** After all initial reviews complete, you will receive a message from the lead containing all agents' consolidated findings. For each finding you disagree with, message that reviewer directly via SendMessage and explain why. Defend your own findings when challenged — provide evidence, cite code, reference documentation. If convinced you were wrong, update your finding's status to `retracted` in your challenge task output.
 
 3. **No deference.** Do not agree with another reviewer just because they sound confident. If you see a flaw in their reasoning, say so. The goal is truth, not consensus.
 
@@ -29,13 +29,9 @@ You are part of a review swarm operating in adversarial mode. This means:
 
 ## Reporting Format
 
-Post findings to YOUR OWN namespaced key via `mcp__swarm__mailbox_state`. Each agent writes to `swarm:findings:<your-agent-name>` — never to another agent's key. This prevents write races where concurrent agents overwrite each other's data.
+When completing your primary review task, include your findings as the final content of your task completion output. Write the JSON array as the last thing in your output.
 
-- Write your findings: `mcp__swarm__mailbox_state(key: "swarm:findings:<your-agent-name>", value: "<json>")`
-- Read another agent's findings: `mcp__swarm__mailbox_state(key: "swarm:findings:<other-agent-name>")`
-- Check `swarm:agent_roster` for the list of agent names
-
-Do NOT use `mailbox_post` or `mailbox_take` — those are channel tools reserved for `/review-swarm`.
+When completing your challenge task, write your updated findings array (with any retractions or new evidence) as the final content of your challenge task output.
 
 Each finding is a JSON object:
 
@@ -53,11 +49,10 @@ Each finding is a JSON object:
 }
 ```
 
-During challenge phase, update YOUR OWN findings in your own key:
+During the challenge phase, update your findings in your challenge task output:
 - Set `status` to `retracted` if you withdraw a finding
 - Add to `evidence` field if you successfully defend a finding
-- Add `challenged_by` and `defended_against` arrays to track the debate
-- To challenge another agent's finding, message them directly — they update their own key
+- To challenge another agent's finding, message them directly via SendMessage
 
 ## Quality Standards
 

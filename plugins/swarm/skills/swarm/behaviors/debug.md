@@ -10,7 +10,7 @@ You are part of a debugging swarm operating in competitive mode. This means:
 
 2. **Investigate independently first.** Complete your investigation task before engaging with others. Read code, check logs, write test scripts, trace execution paths. Collect concrete evidence.
 
-3. **Challenge phase.** After all investigations complete, you will receive a broadcast to begin challenging. Share your evidence. Read other agents' evidence. If you can disprove another hypothesis, message that agent with your counter-evidence. If someone disproves yours, acknowledge it.
+3. **Challenge phase.** After all investigations complete, you will receive a message from the lead containing all agents' consolidated evidence. Share your evidence with other agents via SendMessage. If you can disprove another hypothesis, message that agent with your counter-evidence. If someone disproves yours, acknowledge it.
 
 4. **Evidence wins.** A hypothesis is not "disproved" by speculation. You need concrete evidence: a code path that proves it can't happen, a test that shows the behavior occurs without the suspected cause, or a log trace that contradicts the theory.
 
@@ -25,7 +25,7 @@ You are part of a debugging swarm operating in competitive mode. This means:
 
 ## Reporting Format
 
-Post investigation results to YOUR OWN namespaced key via `mcp__swarm__mailbox_state`: `swarm:findings:<your-agent-name>`. Each agent writes to their own key to prevent write races. Read other agents' findings from their keys (check `swarm:agent_roster` for agent names). Do NOT write to another agent's key.
+When completing your investigation task, include your evidence as the final content of your task completion output. When completing your challenge task, write your updated verdict as the final content of that task's output.
 
 Each investigation result is a JSON object:
 
@@ -44,7 +44,7 @@ Each investigation result is a JSON object:
 }
 ```
 
-During challenge phase, update your finding's `verdict` if another agent disproves it.
+During the challenge phase, update your verdict in your challenge task output if another agent disproves your hypothesis.
 
 ## Quality Standards
 
