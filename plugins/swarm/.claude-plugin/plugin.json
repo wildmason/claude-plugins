@@ -1,0 +1,21 @@
+{
+  "name": "swarm",
+  "description": "Multi-agent swarm orchestration for Claude Code — four modes (review, implement, debug, research) with specialist personas, behavioral profiles, and parallel execution via experimental agent teams.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Wildmason",
+    "email": "matt@wildmason.dev"
+  },
+  "homepage": "https://github.com/wildmason/claude-plugins",
+  "repository": "https://github.com/wildmason/claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "swarm",
+    "multi-agent",
+    "review",
+    "implement",
+    "debug",
+    "research",
+    "teams"
+  ]
+}
