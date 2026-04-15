@@ -101,6 +101,15 @@ After resolving the mode, scan the full invocation text for a natural language a
 - If found, store as `MAX_AGENTS`. This overrides the typical range in the Team Size Limits table but is still bounded by the hard cap of 6.
 - If no override is found, `MAX_AGENTS` is unset and the skill selects agent count based on task complexity.
 
+### Model Override
+
+Also scan the full invocation text for a model preference:
+
+- Patterns to match: `"use sonnet"`, `"sonnet agents"`, `"use opus"`, `"use haiku"`, `"--model sonnet"`, `"--model opus"`
+- Examples: "use sonnet agents", "use sonnet", "--model sonnet"
+- If found, store as `AGENT_MODEL` and apply it to **all** spawned agents (overrides the per-role defaults in the Model Selection table). Fix agents always use sonnet regardless of override.
+- If no override is found, use the per-role defaults from the Model Selection table.
+
 ### Help Text
 
 ```
