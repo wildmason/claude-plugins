@@ -233,15 +233,30 @@ Every spawn prompt **must** include:
 
 4. **Findings output instructions:**
    ```
-   ## Findings Output
+   ## Findings Delivery — read the "Findings Delivery Contract" in your behavioral profile
 
    Your agent name is: <YOUR-AGENT-NAME>
 
-   When you complete your primary task, include your full structured findings
-   as the final content of your task completion output using the JSON format
-   defined in your behavioral profile. The lead will collect your findings
-   and distribute them to all agents before the challenge phase begins.
+   The behavioral profile above contains a hard contract on findings delivery.
+   The summary:
+
+   1. In the same turn you mark your task complete via TaskUpdate(status="completed"),
+      you MUST also SendMessage your findings JSON to team-lead. The message body
+      must be ONLY a single fenced ```json block — no narrative wrapper.
+   2. The team-task system does NOT expose your task output to the lead. Findings
+      reach the lead exclusively via SendMessage. Marking a task complete without
+      sending the JSON message is a contract violation.
+   3. Do NOT split SendMessage(JSON) and TaskUpdate(complete) across turns. Do them
+      in the same turn so there is no possibility of forgetting.
+   4. Run the self-check from the Findings Delivery Contract before completing.
+
+   This contract exists because past swarms have failed when agents marked tasks
+   complete without sending the JSON, forcing the lead to chase them via
+   SendMessage and burn a full round-trip per agent. Don't be that agent.
    ```
+
+   (Implement mode does not have a JSON findings contract — for that mode,
+   substitute task completion summary instructions per the implement profile.)
 
 5. **Mode-specific collaboration instructions** from the behavioral profile, tailored to the agent's role.
 
@@ -306,7 +321,7 @@ On each `TaskCompleted` event:
 
 When all tasks in a phase complete and the next phase requires agents to see each other's work:
 
-1. Use `TaskOutput` to read each agent's completed task output and extract findings JSON
+1. Findings arrive via `SendMessage` from each agent in the same turn they mark their task complete (per the Findings Delivery Contract in the behavior profile). Collect them from your inbox. **Do NOT use `TaskOutput`** — that tool is for background shells and does not return team-task output.
 2. Consolidate all findings into a single array
 3. Send each agent a separate `SendMessage` with the full consolidated findings before their next task begins — **one call per agent, never broadcast (`to: "*"` is not supported for structured messages)**
 
@@ -348,7 +363,7 @@ Confirm every task is completed before proceeding.
 
 ### Step 2 — Gather Final Output
 
-Use `TaskOutput` to read each agent's last completed task output and extract the findings JSON. Merge into a single unified array.
+Collect each agent's final findings JSON from your inbox — the agents send it via `SendMessage` in the same turn they complete their task (per the Findings Delivery Contract). Merge into a single unified array. **Do NOT use `TaskOutput`** — that tool is for background shells and does not return team-task output. If an agent failed to send their JSON, prompt them via `SendMessage`: "Reply with your full findings JSON as a single fenced ```json block, nothing else."
 
 ### Step 3 — Shut Down Teammates
 
@@ -446,14 +461,14 @@ When pausing, provide: what triggered it, current state, options, and a recommen
 
 #### Phase 2 — Challenge
 
-5. When all `review` tasks complete, collect each reviewer's findings via `TaskOutput` and consolidate.
+5. When all `review` tasks complete, collect each reviewer's findings from your inbox (each reviewer sends their findings JSON via `SendMessage` in the same turn they mark complete, per the Findings Delivery Contract) and consolidate.
 6. Send each reviewer a separate `SendMessage` (one call per reviewer, never `to: "*"`):
    > "All initial reviews complete. Challenge phase beginning. Here are all agents' findings: [consolidated JSON]. For each finding you disagree with, message that reviewer directly via SendMessage. Defend your own findings with evidence. If convinced you were wrong, mark the finding as `retracted`. Mark your challenge task complete with your updated findings in the output."
 7. Reviewers challenge each other via `SendMessage` and mark `challenge` tasks complete with updated findings.
 
 #### Phase 3 — Settlement and Fixes
 
-8. Collect updated findings via `TaskOutput` and merge into the final settled array.
+8. Collect updated findings from your inbox (sent via `SendMessage` per the Findings Delivery Contract) and merge into the final settled array.
 9. For any findings with confidence `certain` or `likely` and status `pending`:
    - Spawn a fix agent (sonnet) with fix instructions derived from the findings
    - After fixes, create `re-review` tasks for original reviewers to verify
@@ -515,14 +530,14 @@ When pausing, provide: what triggered it, current state, options, and a recommen
 
 #### Phase 3 — Challenge
 
-6. Collect all evidence via `TaskOutput` and consolidate.
+6. Collect all evidence from your inbox (sent via `SendMessage` per the Findings Delivery Contract) and consolidate.
 7. Send each agent a separate `SendMessage` (one call per agent, never `to: "*"`):
    > "Investigation complete. Challenge phase beginning. Here is all agents' evidence: [consolidated JSON]. Exchange counter-evidence via SendMessage. Mark your challenge task complete with your updated verdict in the output."
 8. Agents exchange evidence and mark `challenge` tasks complete.
 
 #### Phase 4 — Resolution
 
-9. Collect updated verdicts via `TaskOutput` and evaluate survivors:
+9. Collect updated verdicts from your inbox (sent via `SendMessage` per the Findings Delivery Contract) and evaluate survivors:
    - **One survivor:** Agent writes a minimal reproduction test. Ask user: "Root cause identified: [summary]. Fix now or report findings?"
    - **Multiple survivors:** Report all with a recommendation.
    - **Zero survivors:** Generate new hypotheses and run a second round. If zero after 2 rounds, pause for user input.
@@ -548,14 +563,14 @@ When pausing, provide: what triggered it, current state, options, and a recommen
 
 #### Phase 3 — Cross-Pollination and Synthesis
 
-6. Collect all findings via `TaskOutput` and consolidate.
+6. Collect all findings from your inbox (sent via `SendMessage` per the Findings Delivery Contract) and consolidate.
 7. Send each agent a separate `SendMessage` (one call per agent, never `to: "*"`):
    > "Exploration complete. Cross-pollination beginning. Here are all agents' findings: [consolidated JSON]. Message agents via SendMessage to resolve disagreements. Mark your synthesize task complete with refined findings in the output."
 8. Agents message each other and mark `synthesize` tasks complete.
 
 #### Phase 4 — Final Report
 
-9. Collect synthesized findings via `TaskOutput` and merge. Assemble the final report:
+9. Collect synthesized findings from your inbox (sent via `SendMessage` per the Findings Delivery Contract) and merge. Assemble the final report:
    - **Recommendations** — ranked by confidence and feasibility
    - **Trade-offs** — costs and gains per option
    - **Unresolved disagreements** — both positions presented
