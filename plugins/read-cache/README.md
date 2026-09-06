@@ -19,8 +19,14 @@ Measured across five weeks of real Claude Code transcripts on this machine
 | Duplicate `Read` calls (same file, same session) | 1,440 calls, **8.3%** of all tool output |
 | Duplicate Bash file-reads | 2,114 calls, 6.4% of all tool output |
 
-Roughly one tool call in twenty-five was re-reading something already in
-context.
+> **Correction (2026-09-06).** Those figures count *path-level* repeats and are
+> wrong as a measure of recoverable waste. They conflate duplication with
+> **scanning** - sequential windows through one large file. Of 1,347 repeat
+> read-pairs over 35 days only **52** requested an identical line span.
+> Replayed through this plugin's own decision core, the real saving is
+> **0.9%** of file-read bytes, against ~46 ms of hook latency per call.
+> Run `python scripts/replay.py --days 7` to reproduce. The plugin works as
+> designed; the opportunity was mis-sized.
 
 ## What it does
 
@@ -80,6 +86,17 @@ python scripts/stats.py
 ```
 
 Reports duplicate reads blocked, context bytes not spent, and live caches.
+
+## Sizing it before you trust it
+
+```bash
+python scripts/replay.py --days 7
+```
+
+Drives the real decision core over `~/.claude/projects/**/*.jsonl` and reports
+what would have been blocked, with and without the insist hatch. Use this to
+size any hook idea *before* building it - that step is what caught the error
+above.
 
 ## Tests
 
