@@ -104,5 +104,5 @@ above.
 python -m unittest discover -s tests
 ```
 
-106 tests: 78 on the decision core, 28 driving the real hook scripts over
-stdin against files on disk.
+132 tests: 78 on the decision core, 31 driving the real hook scripts over
+stdin against files on disk, and 23 on the replay harness.
