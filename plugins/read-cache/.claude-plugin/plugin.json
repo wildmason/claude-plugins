@@ -1,0 +1,19 @@
+{
+  "name": "read-cache",
+  "description": "Blocks re-reads of files already in the context window. Range-aware, fingerprinted, and lossless — it never summarises, it points at the copy you already have.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Wildmason",
+    "email": "matt@wildmason.dev"
+  },
+  "homepage": "https://github.com/wildmason/claude-plugins",
+  "repository": "https://github.com/wildmason/claude-plugins",
+  "license": "MIT",
+  "keywords": [
+    "context",
+    "tokens",
+    "hooks",
+    "efficiency",
+    "cache"
+  ]
+}

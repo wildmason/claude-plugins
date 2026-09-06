@@ -13,6 +13,7 @@ Claude Code plugins from [Wildmason](https://wildmason.dev).
 | Plugin | Description |
 |--------|-------------|
 | [swarm](plugins/swarm/) | Multi-agent swarm orchestration — review, implement, debug, and research modes |
+| [read-cache](plugins/read-cache/) | Blocks re-reads of files already in the context window — range-aware, fingerprinted, lossless |
 
 ## Install a plugin
 

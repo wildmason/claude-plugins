@@ -13,6 +13,13 @@
       "category": "development",
       "source": "./plugins/swarm",
       "homepage": "https://github.com/wildmason/claude-plugins/tree/main/plugins/swarm"
+    },
+    {
+      "name": "read-cache",
+      "description": "Blocks re-reads of files already in the context window. Range-aware, fingerprinted and lossless - it never summarises, it points at the copy you already have.",
+      "category": "development",
+      "source": "./plugins/read-cache",
+      "homepage": "https://github.com/wildmason/claude-plugins/tree/main/plugins/read-cache"
     }
   ]
 }
