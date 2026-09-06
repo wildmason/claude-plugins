@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 
 import investigation as I  # noqa: E402
 import replay_shunt as S  # noqa: E402
+import subagent_economics as SE  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -169,6 +170,65 @@ class TestClassifier(unittest.TestCase):
 
     def test_an_image_read_is_not_an_observation_of_text(self):
         self.assertEqual(self.kind("Read", {"file_path": "/repo/shot.png"}), "OTHER")
+
+
+# ---------------------------------------------------------------------------
+# subagent economics
+# ---------------------------------------------------------------------------
+
+
+class TestRealizedCompression(unittest.TestCase):
+    def test_a_small_report_from_a_big_read_is_high_compression(self):
+        self.assertAlmostEqual(SE.realized_compression(100000, 1000), 0.99, places=3)
+
+    def test_returning_everything_is_no_compression(self):
+        self.assertEqual(SE.realized_compression(500, 500), 0.0)
+
+    def test_a_report_larger_than_the_reading_never_goes_negative(self):
+        self.assertEqual(SE.realized_compression(100, 400), 0.0)
+
+    def test_a_lane_that_read_nothing_has_no_ratio(self):
+        self.assertIsNone(SE.realized_compression(0, 120))
+
+    def test_a_silent_lane_must_not_be_read_as_perfect(self):
+        # Guards the bug this measurement actually had: a lane that reported
+        # through another channel looks like 100% compression and inflates
+        # the aggregate. The harness excludes these; this pins the arithmetic
+        # that made the inflation possible.
+        self.assertEqual(SE.realized_compression(100000, 0), 1.0)
+
+
+class TestPriceRatio(unittest.TestCase):
+    def test_a_cheaper_worker_yields_a_ratio_above_one(self):
+        r = SE.price_ratio(worker_in=0.8, worker_out=4.0, frontier_in=5.0, frontier_out=25.0)
+        self.assertGreater(r, 1.0)
+
+    def test_identical_pricing_is_parity(self):
+        self.assertAlmostEqual(
+            SE.price_ratio(5.0, 25.0, 5.0, 25.0), 1.0, places=6)
+
+    def test_input_price_dominates_because_investigation_is_read_heavy(self):
+        # Same output price, worker input 10x cheaper -> big ratio.
+        cheap_in = SE.price_ratio(0.5, 25.0, 5.0, 25.0)
+        cheap_out = SE.price_ratio(5.0, 2.5, 5.0, 25.0)
+        self.assertGreater(cheap_in, cheap_out)
+
+    def test_a_free_worker_has_no_finite_ratio(self):
+        self.assertIsNone(SE.price_ratio(0.0, 0.0, 5.0, 25.0))
+
+
+class TestAssistantText(unittest.TestCase):
+    def test_takes_the_text_block_and_nothing_else(self):
+        # A subagent record carries thinking and tool_use alongside its report.
+        # Counting thinking as the returned report would understate compression.
+        rec = {"message": {"content": [
+            {"type": "thinking", "text": "internal reasoning"},
+            {"type": "text", "text": "foo is called from a.ts and b.ts"},
+            {"type": "tool_use", "id": "1", "name": "Read", "input": {}}]}}
+        self.assertEqual(SE.assistant_text(rec), "foo is called from a.ts and b.ts")
+
+    def test_a_record_with_no_content_is_empty(self):
+        self.assertEqual(SE.assistant_text({"message": {}}), "")
 
 
 if __name__ == "__main__":
